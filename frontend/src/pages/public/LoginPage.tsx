@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
-import { AxiosError } from 'axios'
 import { PublicHeader } from '../../components/layout/PublicHeader'
-import { api, persistAuth, type AuthResponse } from '../../lib/api'
+import { api, initializeCsrf, type MutlogUser } from '../../lib/api'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -18,11 +18,12 @@ export function LoginPage() {
     setSubmitting(true)
 
     try {
-      const { data } = await api.post<AuthResponse>('/auth/login', { phone, password })
-      persistAuth(data)
+      await initializeCsrf()
+      await api.post('/auth/login', { phone, password })
+      const { data } = await api.get<{ user: MutlogUser }>('/auth/me')
       navigate(data.user.user_type === 'transporteur' ? '/transporteur' : '/client', { replace: true })
     } catch (err) {
-      const response = err instanceof AxiosError ? err.response?.data : undefined
+      const response = axios.isAxiosError(err) ? err.response?.data : undefined
       setError(response?.message ?? response?.errors?.phone?.[0] ?? 'Impossible de se connecter. Vérifiez vos identifiants.')
     } finally {
       setSubmitting(false)
