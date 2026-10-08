@@ -12,8 +12,8 @@ export function PublicHeader() {
   return (
     <header className="site-header">
       <Link className="brand" to="/" aria-label="MUTLOG - Accueil">
-        <span className="brand-mark">M</span>
-        <span className="brand-name">MUTLOG</span>
+        <img className="brand-logo" src="/brand/mutlog-logo.svg" alt="MUTLOG" />
+        <span className="sr-only">MUTLOG</span>
       </Link>
 
       <nav className="site-nav" aria-label="Navigation principale">

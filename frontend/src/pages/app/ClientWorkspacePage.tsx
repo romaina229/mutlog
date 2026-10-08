@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ClipboardList, Circle, LogOut, MapPin, Package, PackagePlus, Phone, Plus, Truck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ClipboardList, Circle, LogOut, MapPin, Package, PackagePlus, Phone, Plus } from 'lucide-react'
 import {
   api,
   createTransportRequest,
@@ -65,7 +65,7 @@ function ClientHeader({ user }: { user: MutlogUser | null }) {
 
   return (
     <header className="app-header">
-      <Link className="brand" to="/"><span className="brand-mark"><Truck size={19} /></span><span className="brand-name">MUTLOG</span></Link>
+      <Link className="brand" to="/" aria-label="MUTLOG - Accueil"><img className="brand-logo" src="/brand/mutlog-logo.svg" alt="MUTLOG" /></Link>
       <nav className="app-nav" aria-label="Navigation client">
         <Link to="/client">Tableau de bord</Link>
         <Link to="/client/demandes">Mes demandes</Link>
