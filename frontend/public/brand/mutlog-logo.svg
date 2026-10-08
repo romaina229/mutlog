@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 104" role="img" aria-labelledby="title desc">
+  <title id="title">MUTLOG</title>
+  <desc id="desc">Logo MUTLOG bleu et orange</desc>
+  <g transform="translate(8 8)">
+    <path fill="#0B2A4A" d="M5 12 22 2l31 31L84 2l17 10-48 48z"/>
+    <path fill="#FF7A00" d="m5 62 26-25 13 25z"/>
+    <path fill="#0B2A4A" d="m58 37 27 25H48z"/>
+  </g>
+  <text x="115" y="70" fill="#0B2A4A" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" letter-spacing="1.2">MUTLOG</text>
+</svg>
