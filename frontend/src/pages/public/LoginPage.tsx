@@ -1,14 +1,32 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { AxiosError } from 'axios'
 import { PublicHeader } from '../../components/layout/PublicHeader'
+import { api, persistAuth, type AuthResponse } from '../../lib/api'
 
 export function LoginPage() {
-  const [submitted, setSubmitted] = useState(false)
+  const navigate = useNavigate()
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSubmitted(true)
+    setError('')
+    setSubmitting(true)
+
+    try {
+      const { data } = await api.post<AuthResponse>('/auth/login', { phone, password })
+      persistAuth(data)
+      navigate(data.user.user_type === 'transporteur' ? '/transporteur' : '/client', { replace: true })
+    } catch (err) {
+      const response = err instanceof AxiosError ? err.response?.data : undefined
+      setError(response?.message ?? response?.errors?.phone?.[0] ?? 'Impossible de se connecter. Vérifiez vos identifiants.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -25,16 +43,17 @@ export function LoginPage() {
           <form className="auth-form" onSubmit={handleSubmit}>
             <label>
               <span>Numéro de téléphone</span>
-              <input required type="tel" placeholder="+229 01 00 00 00" />
+              <input required type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+229 01 00 00 00" autoComplete="tel" />
             </label>
             <label>
               <span>Mot de passe</span>
-              <input required type="password" placeholder="Votre mot de passe" />
+              <input required type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Votre mot de passe" autoComplete="current-password" />
             </label>
-            <button className="button button-primary button-large" type="submit">Se connecter</button>
+            {error && <p className="form-error">{error}</p>}
+            <button className="button button-primary button-large" type="submit" disabled={submitting}>
+              {submitting ? 'Connexion...' : 'Se connecter'}
+            </button>
           </form>
-
-          {submitted && <p className="form-feedback">Connexion prête pour l'intégration de l'API Laravel.</p>}
 
           <p className="auth-switch">
             Vous n'avez pas encore de compte ?
