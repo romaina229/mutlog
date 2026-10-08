@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -25,13 +26,12 @@ class AuthController extends Controller
         ]);
 
         $user = User::create($validated);
-        $token = $user->createToken('mutlog-web')->plainTextToken;
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Compte créé avec succès.',
             'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
         ], 201);
     }
 
@@ -50,14 +50,12 @@ class AuthController extends Controller
             ]);
         }
 
-        $user->tokens()->delete();
-        $token = $user->createToken('mutlog-web')->plainTextToken;
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Connexion réussie.',
             'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
         ]);
     }
 
@@ -70,7 +68,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()?->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Déconnexion réussie.',
