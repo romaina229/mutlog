@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ClipboardList, Circle, LogOut, MapPin, Package, PackagePlus, Phone, Plus, Truck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ClipboardList, Circle, LogOut, MapPin, Package, PackagePlus, Phone, Plus } from 'lucide-react'
 import {
   api,
   createTransportRequest,
