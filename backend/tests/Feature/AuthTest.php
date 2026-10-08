@@ -13,7 +13,7 @@ class AuthTest extends TestCase
 
     public function test_client_can_register_with_required_mutlog_profile_fields(): void
     {
-        $response = $this->postJson('/api/auth/register', [
+        $response = $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/register', [
             'name' => 'Jean Dupont',
             'phone' => '+229 97000000',
             'address' => 'Quartier Zongo',
@@ -77,7 +77,7 @@ class AuthTest extends TestCase
             'password' => 'Password123!',
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
+        $response = $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/login', [
             'phone' => $user->phone,
             'password' => 'Password123!',
         ]);
@@ -98,7 +98,7 @@ class AuthTest extends TestCase
             'password' => 'Password123!',
         ]);
 
-        $this->postJson('/api/auth/login', [
+        $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/login', [
             'phone' => '+229 97000002',
             'password' => 'wrong-password',
         ])->assertUnprocessable();
@@ -115,12 +115,14 @@ class AuthTest extends TestCase
             'user_type' => 'transporteur',
         ]);
 
-        $this->actingAs($user, 'web')
+        $this->withHeader('Origin', 'http://localhost:5173')
+            ->actingAs($user, 'web')
             ->getJson('/api/auth/me')
             ->assertOk()
             ->assertJsonPath('user.id', $user->id);
 
-        $this->actingAs($user, 'web')
+        $this->withHeader('Origin', 'http://localhost:5173')
+            ->actingAs($user, 'web')
             ->postJson('/api/auth/logout')
             ->assertOk();
 
@@ -130,6 +132,6 @@ class AuthTest extends TestCase
 
     public function test_protected_profile_requires_authentication(): void
     {
-        $this->getJson('/api/auth/me')->assertUnauthorized();
+        $this->withHeader('Origin', 'http://localhost:5173')->getJson('/api/auth/me')->assertUnauthorized();
     }
 }
