@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { AxiosError } from 'axios'
+import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 import { PublicHeader } from '../../components/layout/PublicHeader'
-import { api, persistAuth, type AuthResponse } from '../../lib/api'
+import { api, initializeCsrf, type MutlogUser } from '../../lib/api'
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -36,14 +36,15 @@ export function RegisterPage() {
     setSubmitting(true)
 
     try {
-      const { data } = await api.post<AuthResponse>('/auth/register', {
+      await initializeCsrf()
+      await api.post('/auth/register', {
         ...form,
         email: form.email || null,
       })
-      persistAuth(data)
+      const { data } = await api.get<{ user: MutlogUser }>('/auth/me')
       navigate(data.user.user_type === 'transporteur' ? '/transporteur' : '/client', { replace: true })
     } catch (err) {
-      const response = err instanceof AxiosError ? err.response?.data : undefined
+      const response = axios.isAxiosError(err) ? err.response?.data : undefined
       setError(response?.message ?? Object.values(response?.errors ?? {})?.[0]?.[0] ?? 'Impossible de créer le compte.')
     } finally {
       setSubmitting(false)
