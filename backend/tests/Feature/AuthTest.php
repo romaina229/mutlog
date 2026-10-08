@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -27,9 +27,9 @@ class AuthTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('user.phone', '+229 97000000')
-            ->assertJsonPath('user.user_type', 'client')
-            ->assertJsonPath('token_type', 'Bearer');
+            ->assertJsonPath('user.user_type', 'client');
 
+        $this->assertAuthenticated('web');
         $this->assertDatabaseHas('users', [
             'phone' => '+229 97000000',
             'user_type' => 'client',
@@ -83,10 +83,9 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('user.id', $user->id)
-            ->assertJsonPath('token_type', 'Bearer');
+            ->assertJsonPath('user.id', $user->id);
 
-        $this->assertDatabaseCount('personal_access_tokens', 1);
+        $this->assertAuthenticatedAs($user, 'web');
     }
 
     public function test_invalid_login_is_rejected(): void
@@ -103,6 +102,8 @@ class AuthTest extends TestCase
             'phone' => '+229 97000002',
             'password' => 'wrong-password',
         ])->assertUnprocessable();
+
+        $this->assertGuest('web');
     }
 
     public function test_authenticated_user_can_read_profile_and_logout(): void
@@ -114,18 +115,17 @@ class AuthTest extends TestCase
             'user_type' => 'transporteur',
         ]);
 
-        $token = $user->createToken('test')->plainTextToken;
-
-        $this->withHeader('Authorization', 'Bearer '.$token)
+        $this->actingAs($user, 'web')
             ->getJson('/api/auth/me')
             ->assertOk()
             ->assertJsonPath('user.id', $user->id);
 
-        $this->withHeader('Authorization', 'Bearer '.$token)
+        $this->actingAs($user, 'web')
             ->postJson('/api/auth/logout')
             ->assertOk();
 
-        $this->assertSame(0, PersonalAccessToken::where('tokenable_id', $user->id)->count());
+        $this->assertGuest('web');
+        $this->assertFalse(Auth::guard('web')->check());
     }
 
     public function test_protected_profile_requires_authentication(): void
