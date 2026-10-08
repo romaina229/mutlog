@@ -1,5 +1,6 @@
 import { CalendarDays, MapPin, Package, Search, Truck } from 'lucide-react'
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { PublicHeader } from '../../components/layout/PublicHeader'
 
