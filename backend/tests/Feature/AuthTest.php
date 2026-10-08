@@ -24,21 +24,32 @@ class AuthTest extends TestCase
             'password_confirmation' => 'Password123!',
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJsonPath('user.phone', '+229 97000000')
-            ->assertJsonPath('user.user_type', 'client');
-
+        $response->assertCreated()->assertJsonPath('user.phone', '+229 97000000')->assertJsonPath('user.user_type', 'client');
         $this->assertAuthenticated('web');
-        $this->assertDatabaseHas('users', [
-            'phone' => '+229 97000000',
+        $this->assertDatabaseHas('users', ['phone' => '+229 97000000', 'user_type' => 'client']);
+    }
+
+    public function test_session_authentication_persists_between_api_requests(): void
+    {
+        $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/register', [
+            'name' => 'Session Client',
+            'phone' => '+229 97000009',
+            'address' => 'Cadjehoun',
+            'city' => 'Cotonou',
             'user_type' => 'client',
-        ]);
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ])->assertCreated();
+
+        $this->withHeader('Origin', 'http://localhost:5173')
+            ->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('user.phone', '+229 97000009');
     }
 
     public function test_transporteur_can_register(): void
     {
-        $response = $this->postJson('/api/auth/register', [
+        $this->postJson('/api/auth/register', [
             'name' => 'Transport Benin',
             'phone' => '+229 96000000',
             'address' => 'Akpakpa',
@@ -46,14 +57,12 @@ class AuthTest extends TestCase
             'user_type' => 'transporteur',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
-        ]);
-
-        $response->assertCreated()->assertJsonPath('user.user_type', 'transporteur');
+        ])->assertCreated()->assertJsonPath('user.user_type', 'transporteur');
     }
 
     public function test_admin_cannot_be_created_through_public_registration(): void
     {
-        $response = $this->postJson('/api/auth/register', [
+        $this->postJson('/api/auth/register', [
             'name' => 'Admin',
             'phone' => '+229 95000000',
             'address' => 'Cotonou',
@@ -61,9 +70,8 @@ class AuthTest extends TestCase
             'user_type' => 'admin',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
-        ]);
+        ])->assertUnprocessable();
 
-        $response->assertUnprocessable();
         $this->assertDatabaseCount('users', 0);
     }
 
@@ -77,13 +85,10 @@ class AuthTest extends TestCase
             'password' => 'Password123!',
         ]);
 
-        $response = $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/login', [
+        $this->withHeader('Origin', 'http://localhost:5173')->postJson('/api/auth/login', [
             'phone' => $user->phone,
             'password' => 'Password123!',
-        ]);
-
-        $response->assertOk()
-            ->assertJsonPath('user.id', $user->id);
+        ])->assertOk()->assertJsonPath('user.id', $user->id);
 
         $this->assertAuthenticatedAs($user, 'web');
     }
@@ -115,16 +120,9 @@ class AuthTest extends TestCase
             'user_type' => 'transporteur',
         ]);
 
-        $this->withHeader('Origin', 'http://localhost:5173')
-            ->actingAs($user, 'web')
-            ->getJson('/api/auth/me')
-            ->assertOk()
-            ->assertJsonPath('user.id', $user->id);
+        $this->withHeader('Origin', 'http://localhost:5173')->actingAs($user, 'web')->getJson('/api/auth/me')->assertOk()->assertJsonPath('user.id', $user->id);
 
-        $this->withHeader('Origin', 'http://localhost:5173')
-            ->actingAs($user, 'web')
-            ->postJson('/api/auth/logout')
-            ->assertOk();
+        $this->withHeader('Origin', 'http://localhost:5173')->actingAs($user, 'web')->postJson('/api/auth/logout')->assertOk();
 
         $this->assertGuest('web');
         $this->assertFalse(Auth::guard('web')->check());
