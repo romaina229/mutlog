@@ -1,10 +1,10 @@
-name: MUTLOG CI
+name: "MUTLOG CI"
 
 on:
   push:
-    branches: [main, develop]
+    branches: ["main", "develop"]
   pull_request:
-    branches: [main, develop]
+    branches: ["main", "develop"]
 
 jobs:
   frontend:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -46,7 +46,7 @@ jobs:
           POSTGRES_USER: mutlog
           POSTGRES_PASSWORD: mutlog
         ports:
-          - 5432:5432
+          - "5432:5432"
         options: >-
           --health-cmd "pg_isready -U mutlog -d mutlog_test"
           --health-interval 10s
@@ -60,7 +60,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: "8.3"
           extensions: mbstring, dom, curl, fileinfo, pgsql, pdo_pgsql
           coverage: none
           tools: composer:v2
@@ -75,15 +75,15 @@ jobs:
 
       - name: Configure test database
         run: |
-          cat >> .env <<'EOF'
-          DB_CONNECTION=pgsql
-          DB_HOST=127.0.0.1
-          DB_PORT=5432
-          DB_DATABASE=mutlog_test
-          DB_USERNAME=mutlog
-          DB_PASSWORD=mutlog
-          SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173
-          EOF
+          {
+            echo "DB_CONNECTION=pgsql"
+            echo "DB_HOST=127.0.0.1"
+            echo "DB_PORT=5432"
+            echo "DB_DATABASE=mutlog_test"
+            echo "DB_USERNAME=mutlog"
+            echo "DB_PASSWORD=mutlog"
+            echo "SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173"
+          } >> .env
 
       - name: Migrate
         run: php artisan migrate --force
