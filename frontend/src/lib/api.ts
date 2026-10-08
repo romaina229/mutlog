@@ -1,21 +1,24 @@
 import axios from 'axios'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8000'
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api',
+  baseURL: `${backendUrl}/api`,
+  withCredentials: true,
+  withXSRFToken: true,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
   },
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mutlog_token')
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-
-  return config
+export const sanctum = axios.create({
+  baseURL: backendUrl,
+  withCredentials: true,
+  withXSRFToken: true,
+  headers: {
+    Accept: 'application/json',
+  },
 })
 
 export type MutlogUser = {
@@ -28,19 +31,6 @@ export type MutlogUser = {
   email?: string | null
 }
 
-export type AuthResponse = {
-  message: string
-  user: MutlogUser
-  token: string
-  token_type: 'Bearer'
-}
-
-export function persistAuth(response: AuthResponse) {
-  localStorage.setItem('mutlog_token', response.token)
-  localStorage.setItem('mutlog_user', JSON.stringify(response.user))
-}
-
-export function clearAuth() {
-  localStorage.removeItem('mutlog_token')
-  localStorage.removeItem('mutlog_user')
+export async function initializeCsrf() {
+  await sanctum.get('/sanctum/csrf-cookie')
 }
