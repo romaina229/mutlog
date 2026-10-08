@@ -1,0 +1,92 @@
+name: "MUTLOG CI"
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Quality check
+        run: npm run check
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: mutlog_test
+          POSTGRES_USER: mutlog
+          POSTGRES_PASSWORD: mutlog
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U mutlog -d mutlog_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, dom, curl, fileinfo, pgsql, pdo_pgsql
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Configure test database
+        run: |
+          {
+            echo "DB_CONNECTION=pgsql"
+            echo "DB_HOST=127.0.0.1"
+            echo "DB_PORT=5432"
+            echo "DB_DATABASE=mutlog_test"
+            echo "DB_USERNAME=mutlog"
+            echo "DB_PASSWORD=mutlog"
+            echo "SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173"
+          } >> .env
+
+      - name: Migrate
+        run: php artisan migrate --force
+
+      - name: Test
+        run: php artisan test
