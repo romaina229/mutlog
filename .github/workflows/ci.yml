@@ -28,11 +28,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
+      - name: Quality check
+        run: npm run check
 
   backend:
     name: Backend
@@ -78,8 +75,15 @@ jobs:
 
       - name: Configure test database
         run: |
-          printf '%s
-'             'DB_CONNECTION=pgsql'             'DB_HOST=127.0.0.1'             'DB_PORT=5432'             'DB_DATABASE=mutlog_test'             'DB_USERNAME=mutlog'             'DB_PASSWORD=mutlog' >> .env
+          cat >> .env <<'EOF'
+          DB_CONNECTION=pgsql
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_DATABASE=mutlog_test
+          DB_USERNAME=mutlog
+          DB_PASSWORD=mutlog
+          SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173
+          EOF
 
       - name: Migrate
         run: php artisan migrate --force
