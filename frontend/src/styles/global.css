@@ -64,18 +64,24 @@ a {
   color: #0b2a4a;
 }
 
-.brand-mark {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: #0b2a4a;
-  color: #fff;
+.brand-logo {
+  display: block;
+  width: 154px;
+  height: auto;
+  max-height: 42px;
+  object-fit: contain;
 }
 
-.brand-name {
-  letter-spacing: 0.08em;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .site-nav {
@@ -1138,7 +1144,7 @@ textarea:focus { border-color:#123e68; box-shadow:0 0 0 3px rgba(18,62,104,.09);
 @media (max-width: 640px) {
   .app-content,.app-content-narrow { width:min(100% - 22px,1180px); padding-top:30px; }
   .app-header { min-height:64px; }
-  .app-header .brand-name { display:none; }
+  .app-header .brand-logo { width: 128px; max-height: 36px; }
   .user-chip { max-width:110px; }
   .app-panel { padding:21px; }
   .form-grid-2,.form-grid-3 { grid-template-columns:1fr; }
