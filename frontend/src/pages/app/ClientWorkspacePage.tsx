@@ -65,7 +65,7 @@ function ClientHeader({ user }: { user: MutlogUser | null }) {
 
   return (
     <header className="app-header">
-      <Link className="brand" to="/"><span className="brand-mark"><Truck size={19} /></span><span className="brand-name">MUTLOG</span></Link>
+      <Link className="brand" to="/" aria-label="MUTLOG - Accueil"><img className="brand-logo" src="/brand/mutlog-logo.svg" alt="MUTLOG" /></Link>
       <nav className="app-nav" aria-label="Navigation client">
         <Link to="/client">Tableau de bord</Link>
         <Link to="/client/demandes">Mes demandes</Link>
