@@ -146,3 +146,65 @@ Une fonctionnalité terminée doit être relue et testée avant intégration dan
 ## Propriété
 
 Projet propriétaire MUTLOG.
+
+
+## Authentification
+
+Le frontend React est une SPA de première partie du backend Laravel. L'authentification navigateur utilise **Laravel Sanctum en mode SPA/stateful**, avec session Laravel + cookie HTTPOnly et protection CSRF. Aucun jeton d'authentification n'est stocké dans `localStorage`.
+
+Flux :
+
+```text
+GET /sanctum/csrf-cookie
+        ↓
+POST /api/auth/register ou /api/auth/login
+        ↓
+Session Laravel
+        ↓
+GET /api/auth/me
+        ↓
+Routes protégées avec auth:sanctum
+```
+
+La connexion V1 se fait avec :
+
+- numéro de téléphone ;
+- mot de passe.
+
+L'inscription accepte les deux profils publics définis par le cahier des charges :
+
+- client / expéditeur ;
+- transporteur.
+
+Le rôle administrateur n'est pas créable depuis l'inscription publique.
+
+### Configuration locale
+
+Frontend :
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Backend :
+
+```bash
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
+
+Pour un frontend Vite sur `http://localhost:5173`, les variables backend importantes sont :
+
+```env
+FRONTEND_URL=http://localhost:5173
+SANCTUM_STATEFUL_DOMAINS=localhost:5173,127.0.0.1:5173
+```
+
+Le choix de Sanctum stateful est volontaire : Laravel recommande son authentification SPA par session/cookies pour une SPA de première partie, avec CSRF, plutôt que de conserver un bearer token dans le navigateur. urlDocumentation Laravel Sanctum 13.xhttps://laravel.com/docs/13.x/sanctum
